@@ -1,0 +1,27 @@
+---
+BasedOnStyle: LLVM
+Standard: c++20
+IndentWidth: 4
+ColumnLimit: 100
+AccessModifierOffset: -4
+PointerAlignment: Left
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: Inline
+AlwaysBreakTemplateDeclarations: Yes
+FixNamespaceComments: true
+NamespaceIndentation: None
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  # 1: the file's own header (implicit). 2: project headers. 3: Qt. 4: test frameworks.
+  # 5: standard library and everything else.
+  - Regex: '^"'
+    Priority: 2
+  - Regex: '^<Q'
+    Priority: 3
+  - Regex: '^<catch2/'
+    Priority: 4
+  - Regex: '^<'
+    Priority: 5
+...

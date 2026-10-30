@@ -1,0 +1,19 @@
+# Build output
+/build/
+/dist/
+/out/
+CMakeUserPresets.json
+compile_commands.json
+
+# vcpkg: manifest mode installs into the build tree; CI clones vcpkg into .vcpkg and keeps
+# its binary cache in .vcpkg-cache
+/vcpkg_installed/
+/.vcpkg/
+/.vcpkg-cache/
+
+# Editors and OS files
+.vscode/
+.idea/
+*.user
+.DS_Store
+Thumbs.db
