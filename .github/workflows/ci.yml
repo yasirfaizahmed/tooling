@@ -36,7 +36,8 @@ jobs:
             os: windows-2022
             qt_host: windows
             qt_arch: win64_msvc2022_64
-            # aqtinstall 3.3 cannot find the Qt 6.12 Windows metadata; try its development version.
+            # aqtinstall 3.3.0 cannot read the Qt 6.12 Windows repository metadata; its
+            # development version can. Pin a release once one includes the fix.
             aqt_source: "git+https://github.com/miurahr/aqtinstall.git"
             artifact: Cutline-windows-x64
           - name: macOS arm64
@@ -76,16 +77,11 @@ jobs:
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Inspect Qt repository (diagnostic)
+      - name: Use the pinned vcpkg, not Visual Studio's
         if: runner.os == 'Windows'
-        continue-on-error: true
-        run: |
-          curl -sL https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6120/ \
-            | grep -o 'href="[^"?]*/"' | sort -u
-          curl -sL https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6120/qt6_6120/ \
-            | grep -o 'href="[^"?]*"' | sort -u | head -40
-          python -m pip install --quiet "aqtinstall==3.3.*"
-          python -m aqt list-qt windows desktop --arch "$QT_VERSION"
+        # The MSVC environment exports VCPKG_ROOT pointing at the vcpkg bundled with Visual
+        # Studio, overriding the job-level value.
+        run: echo "VCPKG_ROOT=${{ github.workspace }}/.vcpkg" >> "$GITHUB_ENV"
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
