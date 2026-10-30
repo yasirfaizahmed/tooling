@@ -33,9 +33,20 @@ You need Qt 6.12, from the [Qt online installer](https://www.qt.io/download-qt-i
 or `./bootstrap-vcpkg.sh` (Linux, macOS). The first configure downloads and builds the
 dependencies, which takes a few minutes.
 
-**Windows.** Install Visual Studio 2022 (or its Build Tools) with the *Desktop development with
-C++* workload, which includes CMake and Ninja. Install Qt's **MSVC 2022 64-bit** component; the
-MinGW one won't work. Then open **x64 Native Tools Command Prompt for VS 2022**. The plain
+**Windows, one command.** From the repository folder, in any Command Prompt or PowerShell
+window, run:
+
+```bat
+scripts\build-windows.bat
+```
+
+It finds Visual Studio, Qt and vcpkg (cloning vcpkg if it's missing), then builds, tests,
+installs into `dist\` and starts the app. If a prerequisite is missing, it says which one and
+how to install it. CI runs this same script on every push.
+
+**Windows, step by step.** Install Visual Studio 2022 (or its Build Tools) with the *Desktop
+development with C++* workload, which includes CMake and Ninja. Install Qt's **MSVC 2022 64-bit**
+component; the MinGW one won't work. Then open **x64 Native Tools Command Prompt for VS 2022**. The plain
 *Developer Command Prompt* targets 32-bit and fails to link against 64-bit Qt. A regular
 PowerShell or terminal window won't work either: it has no compiler or Ninja on PATH, and its
 `set` doesn't set environment variables. Keep the clone outside OneDrive (e.g. `C:\dev`),

@@ -1,4 +1,7 @@
 * text=auto eol=lf
+# cmd.exe mis-parses labels and goto in batch files with LF-only line endings.
+*.bat text eol=crlf
+*.cmd text eol=crlf
 *.png binary
 *.ico binary
 *.icns binary

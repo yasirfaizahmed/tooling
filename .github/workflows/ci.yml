@@ -73,16 +73,6 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install ninja
 
-      - name: Set up MSVC
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Use the pinned vcpkg, not Visual Studio's
-        if: runner.os == 'Windows'
-        # The MSVC environment exports VCPKG_ROOT pointing at the vcpkg bundled with Visual
-        # Studio, overriding the job-level value.
-        run: echo "VCPKG_ROOT=${{ github.workspace }}/.vcpkg" >> "$GITHUB_ENV"
-
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
@@ -118,18 +108,33 @@ jobs:
           restore-keys: vcpkg-${{ matrix.os }}-${{ env.VCPKG_COMMIT }}-
 
       - name: Configure
+        if: runner.os != 'Windows'
         run: cmake --preset ci -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR"
 
       - name: Build
+        if: runner.os != 'Windows'
         run: cmake --build --preset ci
 
       - name: Test
+        if: runner.os != 'Windows'
         env:
           CUTLINE_SCREENSHOT: ${{ github.workspace }}/screenshot-${{ matrix.artifact }}.png
         run: ctest --preset ci
 
       - name: Install
+        if: runner.os != 'Windows'
         run: cmake --install build/ci --prefix dist
+
+      # Windows goes through the same one-command script that developers use, so it stays
+      # working: it finds Visual Studio itself, then configures, builds, tests and installs.
+      - name: Build, test and install (Windows, scripts/build-windows.bat)
+        if: runner.os == 'Windows'
+        shell: cmd
+        env:
+          CUTLINE_PRESET: ci
+          QT_DIR: ${{ env.QT_ROOT_DIR }}
+          CUTLINE_SCREENSHOT: ${{ github.workspace }}/screenshot-${{ matrix.artifact }}.png
+        run: call scripts\build-windows.bat --no-run
 
       - name: Package (Linux)
         if: runner.os == 'Linux'
