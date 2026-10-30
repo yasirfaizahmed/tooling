@@ -51,6 +51,7 @@
       "name": "test-base",
       "hidden": true,
       "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error" },
       "environment": { "QT_QPA_PLATFORM": "offscreen" }
     },
     { "name": "debug", "inherits": "test-base", "configurePreset": "debug" },
