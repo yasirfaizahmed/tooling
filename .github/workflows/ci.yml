@@ -1,0 +1,145 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  QT_VERSION: "6.12.0"
+  # Keep equal to "builtin-baseline" in vcpkg.json.
+  VCPKG_COMMIT: d186940b2f0c4e8e5b4ff804af57d2a26fbfa091
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux x64
+            os: ubuntu-22.04
+            qt_host: linux
+            qt_arch: linux_gcc_64
+            artifact: Cutline-linux-x64
+          - name: Windows x64
+            os: windows-2022
+            qt_host: windows
+            qt_arch: win64_msvc2022_64
+            artifact: Cutline-windows-x64
+          - name: macOS arm64
+            os: macos-15
+            qt_host: mac
+            qt_arch: clang_64
+            artifact: Cutline-macos-arm64
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/.vcpkg
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.vcpkg-cache
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux packages
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          # Ninja, GCC 12, OpenGL headers for QtGui, and the X11 libraries that Qt's xcb
+          # platform plugin needs (the deploy step resolves its dependencies).
+          sudo apt-get install -y ninja-build g++-12 libgl1-mesa-dev libegl1 \
+            libfontconfig1-dev libfreetype6-dev libxkbcommon-dev libxkbcommon-x11-0 \
+            libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
+            libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 libxcb-xkb1
+          echo "CC=gcc-12" >> "$GITHUB_ENV"
+          echo "CXX=g++-12" >> "$GITHUB_ENV"
+
+      - name: Install macOS packages
+        if: runner.os == 'macOS'
+        run: brew install ninja
+
+      - name: Set up MSVC
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: ${{ matrix.qt_host }}
+          target: desktop
+          arch: ${{ matrix.qt_arch }}
+          cache: true
+          aqtversion: "==3.3.*"
+
+      - name: Fetch vcpkg
+        run: |
+          git init "$VCPKG_ROOT"
+          git -C "$VCPKG_ROOT" fetch --depth 1 https://github.com/microsoft/vcpkg.git "$VCPKG_COMMIT"
+          git -C "$VCPKG_ROOT" checkout --quiet FETCH_HEAD
+          mkdir -p "$VCPKG_DEFAULT_BINARY_CACHE"
+
+      - name: Bootstrap vcpkg
+        if: runner.os != 'Windows'
+        run: '"$VCPKG_ROOT/bootstrap-vcpkg.sh" -disableMetrics'
+
+      - name: Bootstrap vcpkg (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: '"%VCPKG_ROOT%\bootstrap-vcpkg.bat" -disableMetrics'
+
+      - name: Restore vcpkg binary cache
+        uses: actions/cache@v4
+        with:
+          path: .vcpkg-cache
+          key: vcpkg-${{ matrix.os }}-${{ env.VCPKG_COMMIT }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: vcpkg-${{ matrix.os }}-${{ env.VCPKG_COMMIT }}-
+
+      - name: Configure
+        run: cmake --preset ci -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR"
+
+      - name: Build
+        run: cmake --build --preset ci
+
+      - name: Test
+        env:
+          CUTLINE_SCREENSHOT: ${{ github.workspace }}/screenshot-${{ matrix.artifact }}.png
+        run: ctest --preset ci
+
+      - name: Install
+        run: cmake --install build/ci --prefix dist
+
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: tar -C dist -czf "${{ matrix.artifact }}.tar.gz" .
+
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          # Deployment rewrites the binaries; Apple Silicon only runs signed code, so re-sign
+          # ad hoc. Notarized Developer ID signing comes with the installers.
+          codesign --force --deep --sign - dist/Cutline.app
+          ditto -c -k --keepParent dist/Cutline.app "${{ matrix.artifact }}.zip"
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        run: 7z a "${{ matrix.artifact }}.zip" ./dist/*
+
+      - name: Upload app
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            ${{ matrix.artifact }}.*
+            screenshot-${{ matrix.artifact }}.png
+          if-no-files-found: error
