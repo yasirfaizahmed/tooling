@@ -1,0 +1,204 @@
+/*
+ * Cutline application style sheet.
+ * Colour placeholders (token names between at-signs) are replaced with the theme's colours
+ * by theme.cpp, so the same sheet serves every theme.
+ */
+
+QMainWindow {
+    background-color: @window@;
+}
+
+QMainWindow::separator {
+    background-color: @window@;
+    width: 5px;
+    height: 5px;
+}
+
+QMainWindow::separator:hover {
+    background-color: @accent@;
+}
+
+/* Panels */
+
+#mediaBinPanel, #inspectorPanel, #timelinePanel, #previewPanel {
+    background-color: @panel@;
+}
+
+#panelTitleBar {
+    background-color: @raised@;
+    border-bottom: 1px solid @border@;
+}
+
+#panelTitle {
+    color: @textMuted@;
+}
+
+#emptyStateTitle {
+    color: @text@;
+    font-weight: 600;
+}
+
+#emptyStateHint {
+    color: @textMuted@;
+}
+
+/* Preview */
+
+#previewViewport {
+    background-color: #000000;
+    border: 1px solid @border@;
+}
+
+#previewViewportHint {
+    color: @textMuted@;
+}
+
+#previewPosition {
+    color: @text@;
+}
+
+#previewDuration {
+    color: @textMuted@;
+}
+
+/* Menus */
+
+QMenuBar {
+    background-color: @window@;
+    color: @text@;
+    padding: 2px;
+}
+
+QMenuBar::item {
+    background: transparent;
+    padding: 4px 10px;
+    border-radius: 4px;
+}
+
+QMenuBar::item:selected {
+    background-color: @raised@;
+}
+
+QMenu {
+    background-color: @raised@;
+    color: @text@;
+    border: 1px solid @border@;
+    padding: 4px;
+}
+
+QMenu::item {
+    padding: 5px 28px 5px 28px;
+    border-radius: 4px;
+}
+
+QMenu::item:selected {
+    background-color: @accent@;
+    color: @accentText@;
+}
+
+QMenu::item:disabled {
+    color: @textMuted@;
+}
+
+QMenu::indicator {
+    left: 8px;
+    width: 13px;
+    height: 13px;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: @border@;
+    margin: 4px 6px;
+}
+
+/* Controls */
+
+QToolTip {
+    background-color: @raised@;
+    color: @text@;
+    border: 1px solid @border@;
+    padding: 4px 6px;
+}
+
+QPushButton {
+    background-color: @raised@;
+    color: @text@;
+    border: 1px solid @border@;
+    border-radius: 4px;
+    padding: 5px 14px;
+}
+
+QPushButton:hover, QPushButton:default {
+    border-color: @accent@;
+}
+
+QPushButton:pressed {
+    background-color: @sunken@;
+}
+
+QPushButton:disabled {
+    color: @textMuted@;
+}
+
+QToolButton {
+    background: transparent;
+    color: @text@;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+QToolButton:hover {
+    background-color: @raised@;
+    border-color: @border@;
+}
+
+QToolButton:pressed, QToolButton:checked {
+    background-color: @sunken@;
+}
+
+QToolButton:disabled {
+    color: @textMuted@;
+}
+
+/* Scroll bars: slim, no arrow buttons */
+
+QScrollBar:vertical {
+    background: transparent;
+    width: 10px;
+    margin: 0;
+}
+
+QScrollBar:horizontal {
+    background: transparent;
+    height: 10px;
+    margin: 0;
+}
+
+QScrollBar::handle:vertical {
+    background-color: @border@;
+    border-radius: 3px;
+    min-height: 24px;
+    margin: 2px;
+}
+
+QScrollBar::handle:horizontal {
+    background-color: @border@;
+    border-radius: 3px;
+    min-width: 24px;
+    margin: 2px;
+}
+
+QScrollBar::handle:hover {
+    background-color: @textMuted@;
+}
+
+QScrollBar::add-line, QScrollBar::sub-line {
+    width: 0;
+    height: 0;
+}
+
+QScrollBar::add-page, QScrollBar::sub-page {
+    background: transparent;
+}
