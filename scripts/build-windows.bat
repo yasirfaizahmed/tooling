@@ -108,8 +108,15 @@ goto :fail
 :no_qt
 echo.
 echo MISSING: Qt 6 for MSVC 2022 64-bit (looked under C:\Qt and %USERPROFILE%\Qt).
-echo Open the Qt Maintenance Tool, add the "MSVC 2022 64-bit" component of Qt 6.12,
-echo or set QT_DIR to your Qt msvc2022_64 folder before running this script.
+echo Qt from Python (PySide6, PyQt) does not count: it has no C++ headers or CMake files.
+echo Install it without a Qt account using aqtinstall (its development version reads Qt 6.12):
+echo.
+echo   python -m pip install "aqtinstall @ git+https://github.com/miurahr/aqtinstall.git"
+echo   python -m aqt install-qt windows desktop 6.12.0 win64_msvc2022_64 --outputdir C:\Qt
+echo.
+echo Or add the "MSVC 2022 64-bit" component of Qt 6.12 with the Qt Maintenance Tool, or set
+echo QT_DIR to an existing Qt msvc2022_64 folder before running this script.
+if exist "C:\Qt" echo. & echo Found under C:\Qt: & dir /b /ad "C:\Qt"
 goto :fail
 
 :step_failed
