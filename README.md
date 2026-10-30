@@ -27,17 +27,41 @@ ctest --preset system-debug
 
 ### Any OS, with vcpkg
 
-Install Qt 6.12, e.g. with the [Qt online installer](https://www.qt.io/download-qt-installer) or
-[`aqtinstall`](https://github.com/miurahr/aqtinstall), and clone
-[vcpkg](https://github.com/microsoft/vcpkg). On Windows, run this from a *Developer Command Prompt
-for VS 2022*:
+You need Qt 6.12, from the [Qt online installer](https://www.qt.io/download-qt-installer) or
+[`aqtinstall`](https://github.com/miurahr/aqtinstall), and a clone of
+[vcpkg](https://github.com/microsoft/vcpkg), bootstrapped with `bootstrap-vcpkg.bat` (Windows)
+or `./bootstrap-vcpkg.sh` (Linux, macOS). The first configure downloads and builds the
+dependencies, which takes a few minutes.
 
-```bash
-export VCPKG_ROOT=/path/to/vcpkg
-cmake --preset release -DCMAKE_PREFIX_PATH=/path/to/Qt/6.12.0/<arch>
+**Windows.** Install Visual Studio 2022 (or its Build Tools) with the *Desktop development with
+C++* workload, which includes CMake and Ninja. Install Qt's **MSVC 2022 64-bit** component; the
+MinGW one won't work. Then open **x64 Native Tools Command Prompt for VS 2022**. The plain
+*Developer Command Prompt* targets 32-bit and fails to link against 64-bit Qt.
+
+```bat
+cd C:\path\to\tooling
+rem The VS prompt points VCPKG_ROOT at Visual Studio's bundled vcpkg, which can't use the
+rem pinned baseline, so point it at your clone:
+set VCPKG_ROOT=C:\path\to\vcpkg
+rem Qt's DLLs must be on PATH for the tests and for running from the build tree:
+set PATH=C:\Qt\6.12.0\msvc2022_64\bin;%PATH%
+
+cmake --preset release -DCMAKE_PREFIX_PATH=C:\Qt\6.12.0\msvc2022_64
 cmake --build --preset release
 ctest --preset release
-cmake --install build/release --prefix dist   # self-contained app in dist/
+cmake --install build\release --prefix dist
+dist\bin\Cutline.exe
+```
+
+**Linux and macOS** (macOS: `xcode-select --install` and `brew install ninja`; Linux: `ninja-build`
+and `libgl1-mesa-dev`):
+
+```bash
+export VCPKG_ROOT=~/vcpkg
+cmake --preset release -DCMAKE_PREFIX_PATH=~/Qt/6.12.0/gcc_64   # macOS: ~/Qt/6.12.0/macos
+cmake --build --preset release
+ctest --preset release
+cmake --install build/release --prefix dist   # dist/bin/cutline, or dist/Cutline.app on macOS
 ```
 
 Every push builds and tests on Linux, Windows and macOS. App archives and a screenshot from
