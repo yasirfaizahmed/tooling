@@ -30,16 +30,20 @@ jobs:
             os: ubuntu-22.04
             qt_host: linux
             qt_arch: linux_gcc_64
+            aqt_source: ""
             artifact: Cutline-linux-x64
           - name: Windows x64
             os: windows-2022
             qt_host: windows
             qt_arch: win64_msvc2022_64
+            # aqtinstall 3.3 cannot find the Qt 6.12 Windows metadata; try its development version.
+            aqt_source: "git+https://github.com/miurahr/aqtinstall.git"
             artifact: Cutline-windows-x64
           - name: macOS arm64
             os: macos-15
             qt_host: mac
             qt_arch: clang_64
+            aqt_source: ""
             artifact: Cutline-macos-arm64
     env:
       VCPKG_ROOT: ${{ github.workspace }}/.vcpkg
@@ -72,6 +76,17 @@ jobs:
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
+      - name: Inspect Qt repository (diagnostic)
+        if: runner.os == 'Windows'
+        continue-on-error: true
+        run: |
+          curl -sL https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6120/ \
+            | grep -o 'href="[^"?]*/"' | sort -u
+          curl -sL https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6120/qt6_6120/ \
+            | grep -o 'href="[^"?]*"' | sort -u | head -40
+          python -m pip install --quiet "aqtinstall==3.3.*"
+          python -m aqt list-qt windows desktop --arch "$QT_VERSION"
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
@@ -81,6 +96,7 @@ jobs:
           arch: ${{ matrix.qt_arch }}
           cache: true
           aqtversion: "==3.3.*"
+          aqtsource: ${{ matrix.aqt_source }}
 
       - name: Fetch vcpkg
         run: |

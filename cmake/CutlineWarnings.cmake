@@ -16,6 +16,12 @@ function(cutline_set_warnings target)
         if(ARG_STRICT)
             list(APPEND flags -Wconversion -Wsign-conversion -Wold-style-cast)
         endif()
+        # GCC 12 reports bogus -Wrestrict errors inside libstdc++ for `"text" + std::string`
+        # at -O2 and above (GCC bug 105329). GCC 12 stays because its libstdc++ is the one
+        # Ubuntu 22.04 ships, which keeps Linux builds portable.
+        if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 13)
+            list(APPEND flags -Wno-restrict)
+        endif()
         if(CUTLINE_WARNINGS_AS_ERRORS)
             list(APPEND flags -Werror)
         endif()
