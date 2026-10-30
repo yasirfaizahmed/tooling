@@ -36,7 +36,10 @@ dependencies, which takes a few minutes.
 **Windows.** Install Visual Studio 2022 (or its Build Tools) with the *Desktop development with
 C++* workload, which includes CMake and Ninja. Install Qt's **MSVC 2022 64-bit** component; the
 MinGW one won't work. Then open **x64 Native Tools Command Prompt for VS 2022**. The plain
-*Developer Command Prompt* targets 32-bit and fails to link against 64-bit Qt.
+*Developer Command Prompt* targets 32-bit and fails to link against 64-bit Qt. A regular
+PowerShell or terminal window won't work either: it has no compiler or Ninja on PATH, and its
+`set` doesn't set environment variables. Keep the clone outside OneDrive (e.g. `C:\dev`),
+because syncing the build folder causes locked-file errors.
 
 ```bat
 cd C:\path\to\tooling
